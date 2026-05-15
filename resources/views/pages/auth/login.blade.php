@@ -19,7 +19,7 @@
                 autocomplete="email"
                 placeholder="email@example.com"
             />
-
+            
             <!-- Password -->
             <div class="relative">
                 <flux:input
