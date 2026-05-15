@@ -5,6 +5,7 @@ use App\Livewire\Teacher\Dashboard as TeacherDashboard;
 use App\Livewire\Student\Dashboard as StudentDashboard;
 use App\Livewire\Parent\Dashboard as ParentDashboard;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Admin\Enrollment\EnrollmentForm;
 
 Route::view('/', 'welcome')->name('home');
 
@@ -14,6 +15,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'role:superadmin,admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
+    Route::get('/enrollment/create', EnrollmentForm::class)->name('enrollment.create');
+
 });
 
 Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
