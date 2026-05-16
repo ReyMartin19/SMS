@@ -172,6 +172,11 @@ class EnrollmentForm extends Component
         $this->cancelCreateStudent();
     }
 
+    public function clearStudent(): void
+    {
+        $this->selectedStudent = null;
+    }
+
     public function render()
     {
         return view('livewire.admin.enrollment.enrollment-form');
