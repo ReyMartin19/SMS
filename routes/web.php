@@ -7,6 +7,7 @@ use App\Livewire\Parent\Dashboard as ParentDashboard;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Admin\Enrollment\EnrollmentForm;
 use App\Livewire\Admin\Students\StudentList;
+use App\Livewire\Admin\Students\StudentProfile;
 
 Route::view('/', 'welcome')->name('home');
 
@@ -18,6 +19,7 @@ Route::middleware(['auth', 'role:superadmin,admin'])->prefix('admin')->name('adm
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
     Route::get('/enrollment/create', EnrollmentForm::class)->name('enrollment.create');
     Route::get('/students', StudentList::class)->name('students.index');
+    Route::get('/students/{student}', StudentProfile::class)->name('students.show');
 });
 
 Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {

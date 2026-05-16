@@ -130,7 +130,7 @@
                             </span>
                         </td>
                         <td class="px-5 py-3 text-right">
-                            <a href="#" class="text-xs text-blue-500 hover:text-blue-700">View</a>
+                            <a href="{{ route('admin.students.show', $student) }}" class="text-xs text-blue-500 hover:text-blue-700">View</a>
                         </td>
                     </tr>
                 @empty

@@ -17,6 +17,10 @@ class Student extends Model
         'lrn', 'photo', 'status',
     ];
     
+    protected $casts = [
+        'birthdate' => 'date',
+    ];
+    
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
