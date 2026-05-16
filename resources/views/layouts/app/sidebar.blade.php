@@ -6,29 +6,70 @@
     <body class="min-h-screen bg-white dark:bg-zinc-800">
         <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.header>
-                <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
+                <x-app-logo :sidebar="true" :href="route('dashboard')" wire:navigate />
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
+                {{-- Superadmin & Admin --}}
+                @if (in_array(auth()->user()->role, ['superadmin', 'admin']))
+                    <flux:sidebar.group heading="Main" class="grid">
+                        <flux:sidebar.item icon="home" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')" wire:navigate>
+                            Dashboard
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Enrollment" class="grid">
+                        <flux:sidebar.item icon="users" :href="route('admin.students.index')" :current="request()->routeIs('admin.students.*')" wire:navigate>
+                            Students
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="user-plus" :href="route('admin.enrollment.create')" :current="request()->routeIs('admin.enrollment.create')" wire:navigate>
+                            Enroll Student
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Academic" class="grid">
+                        <flux:sidebar.item icon="academic-cap" href="#" wire:navigate>
+                            Grade Levels
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="squares-2x2" href="#" wire:navigate>
+                            Sections
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="calendar-days" href="#" wire:navigate>
+                            School Years
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
+
+                {{-- Teacher --}}
+                @if (auth()->user()->role === 'teacher')
+                    <flux:sidebar.group heading="Main" class="grid">
+                        <flux:sidebar.item icon="home" :href="route('teacher.dashboard')" :current="request()->routeIs('teacher.dashboard')" wire:navigate>
+                            Dashboard
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
+
+                {{-- Student --}}
+                @if (auth()->user()->role === 'student')
+                    <flux:sidebar.group heading="Main" class="grid">
+                        <flux:sidebar.item icon="home" :href="route('student.dashboard')" :current="request()->routeIs('student.dashboard')" wire:navigate>
+                            Dashboard
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
+
+                {{-- Parent --}}
+                @if (auth()->user()->role === 'parent')
+                    <flux:sidebar.group heading="Main" class="grid">
+                        <flux:sidebar.item icon="home" :href="route('parent.dashboard')" :current="request()->routeIs('parent.dashboard')" wire:navigate>
+                            Dashboard
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
             </flux:sidebar.nav>
 
             <flux:spacer />
-
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
