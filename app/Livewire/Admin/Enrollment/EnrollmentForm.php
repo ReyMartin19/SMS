@@ -11,6 +11,25 @@ use Livewire\Component;
 
 class EnrollmentForm extends Component
 {
+
+    // New student form toggle
+    public bool $showStudentForm = false;
+
+    // New student fields
+    public string $first_name = '';
+    public string $middle_name = '';
+    public string $last_name = '';
+    public string $suffix = '';
+    public string $gender = '';
+    public string $birthdate = '';
+    public string $birthplace = '';
+    public string $address = '';
+    public string $contact_number = '';
+    public string $guardian_name = '';
+    public string $guardian_relationship = '';
+    public string $guardian_contact = '';
+    public string $lrn = '';
+
     // Search
     public string $search = '';
     public ?Student $selectedStudent = null;
@@ -101,6 +120,56 @@ class EnrollmentForm extends Component
 
         session()->flash('success', 'Student enrolled successfully.');
         $this->reset(['selectedStudent', 'grade_level_id', 'section_id', 'search']);
+    }
+
+    public function showCreateStudent(): void
+    {
+        $this->showStudentForm = true;
+        $this->selectedStudent = null;
+    }
+
+    public function cancelCreateStudent(): void
+    {
+        $this->showStudentForm = false;
+        $this->reset([
+            'first_name', 'middle_name', 'last_name', 'suffix',
+            'gender', 'birthdate', 'birthplace', 'address',
+            'contact_number', 'guardian_name', 'guardian_relationship',
+            'guardian_contact', 'lrn',
+        ]);
+    }
+
+    public function saveStudent(): void
+    {
+        $this->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'gender'     => 'required|in:male,female',
+            'birthdate'  => 'required|date',
+            'address'    => 'required|string',
+            'lrn'        => 'nullable|string|unique:students,lrn',
+        ]);
+
+        $student = Student::create([
+            'first_name'             => $this->first_name,
+            'middle_name'            => $this->middle_name,
+            'last_name'              => $this->last_name,
+            'suffix'                 => $this->suffix,
+            'gender'                 => $this->gender,
+            'birthdate'              => $this->birthdate,
+            'birthplace'             => $this->birthplace,
+            'address'                => $this->address,
+            'contact_number'         => $this->contact_number,
+            'guardian_name'          => $this->guardian_name,
+            'guardian_relationship'  => $this->guardian_relationship,
+            'guardian_contact'       => $this->guardian_contact,
+            'lrn'                    => $this->lrn ?: null,
+            'status'                 => 'active',
+        ]);
+
+        $this->selectedStudent = $student;
+        $this->showStudentForm = false;
+        $this->cancelCreateStudent();
     }
 
     public function render()

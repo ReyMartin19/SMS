@@ -49,6 +49,110 @@
             </div>
         @endif
 
+        {{-- Create New Student Button --}}
+        @if (!$selectedStudent && !$showStudentForm)
+        <div class="flex justify-end">
+            <flux:button variant="ghost" wire:click="showCreateStudent">
+                + Create New Student
+            </flux:button>
+        </div>
+        @endif
+
+        {{-- New Student Form --}}
+        @if ($showStudentForm)
+        <div class="border dark:border-zinc-700 rounded-xl p-6 space-y-4">
+            <h2 class="font-semibold text-lg">New Student Information</h2>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <flux:label>First Name <span class="text-red-500">*</span></flux:label>
+                    <flux:input wire:model="first_name" placeholder="First name" />
+                    @error('first_name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <flux:label>Last Name <span class="text-red-500">*</span></flux:label>
+                    <flux:input wire:model="last_name" placeholder="Last name" />
+                    @error('last_name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <flux:label>Middle Name</flux:label>
+                    <flux:input wire:model="middle_name" placeholder="Middle name" />
+                </div>
+                <div>
+                    <flux:label>Suffix</flux:label>
+                    <flux:input wire:model="suffix" placeholder="Jr., Sr., III..." />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <flux:label>Gender <span class="text-red-500">*</span></flux:label>
+                    <flux:select wire:model="gender">
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </flux:select>
+                    @error('gender') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <flux:label>Birthdate <span class="text-red-500">*</span></flux:label>
+                    <flux:input type="date" wire:model="birthdate" />
+                    @error('birthdate') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <flux:label>Birthplace</flux:label>
+                    <flux:input wire:model="birthplace" placeholder="City/Municipality" />
+                </div>
+                <div>
+                    <flux:label>LRN</flux:label>
+                    <flux:input wire:model="lrn" placeholder="Learner Reference Number" />
+                    @error('lrn') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div>
+                <flux:label>Address <span class="text-red-500">*</span></flux:label>
+                <flux:input wire:model="address" placeholder="Complete address" />
+                @error('address') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <flux:label>Contact Number</flux:label>
+                <flux:input wire:model="contact_number" placeholder="09xxxxxxxxx" />
+            </div>
+
+            <div class="border-t dark:border-zinc-700 pt-4 space-y-4">
+                <h3 class="font-medium">Guardian Information</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <flux:label>Guardian Name</flux:label>
+                        <flux:input wire:model="guardian_name" placeholder="Full name" />
+                    </div>
+                    <div>
+                        <flux:label>Relationship</flux:label>
+                        <flux:input wire:model="guardian_relationship" placeholder="Mother, Father..." />
+                    </div>
+                </div>
+                <div>
+                    <flux:label>Guardian Contact</flux:label>
+                    <flux:input wire:model="guardian_contact" placeholder="09xxxxxxxxx" />
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <flux:button variant="ghost" wire:click="cancelCreateStudent">
+                    Cancel
+                </flux:button>
+                <flux:button variant="primary" wire:click="saveStudent">
+                    Save Student
+                </flux:button>
+            </div>
+        </div>
+        @endif
+
         {{-- School Year --}}
         <div>
             <flux:label>School Year</flux:label>
