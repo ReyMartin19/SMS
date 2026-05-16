@@ -29,13 +29,13 @@
                     </flux:sidebar.group>
 
                     <flux:sidebar.group heading="Academic" class="grid">
-                        <flux:sidebar.item icon="academic-cap" href="#" wire:navigate>
+                        <flux:sidebar.item icon="academic-cap" :href="route('admin.academic.grade-levels')" :current="request()->routeIs('admin.academic.grade-levels')" wire:navigate>
                             Grade Levels
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="squares-2x2" href="#" wire:navigate>
+                        <flux:sidebar.item icon="squares-2x2" :href="route('admin.academic.sections')" :current="request()->routeIs('admin.academic.sections')" wire:navigate>
                             Sections
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="calendar-days" href="#" wire:navigate>
+                        <flux:sidebar.item icon="calendar-days" :href="route('admin.academic.school-years')" :current="request()->routeIs('admin.academic.school-years')" wire:navigate>
                             School Years
                         </flux:sidebar.item>
                     </flux:sidebar.group>

@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\Admin\Enrollment\EnrollmentForm;
 use App\Livewire\Admin\Students\StudentList;
 use App\Livewire\Admin\Students\StudentProfile;
+use App\Livewire\Admin\Academic\SchoolYearManager;
+use App\Livewire\Admin\Academic\GradeLevelManager;
+use App\Livewire\Admin\Academic\SectionManager;
 
 Route::view('/', 'welcome')->name('home');
 
@@ -20,6 +23,9 @@ Route::middleware(['auth', 'role:superadmin,admin'])->prefix('admin')->name('adm
     Route::get('/enrollment/create', EnrollmentForm::class)->name('enrollment.create');
     Route::get('/students', StudentList::class)->name('students.index');
     Route::get('/students/{student}', StudentProfile::class)->name('students.show');
+    Route::get('/academic/school-years', SchoolYearManager::class)->name('academic.school-years');
+    Route::get('/academic/grade-levels', GradeLevelManager::class)->name('academic.grade-levels');
+    Route::get('/academic/sections', SectionManager::class)->name('academic.sections');
 });
 
 Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
