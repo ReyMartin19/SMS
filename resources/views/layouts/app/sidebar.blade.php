@@ -39,6 +39,18 @@
                             School Years
                         </flux:sidebar.item>
                     </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Teachers" class="grid">
+                        <flux:sidebar.item icon="user" :href="route('admin.teachers.index')" :current="request()->routeIs('admin.teachers.*')" wire:navigate>
+                            Teachers
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="book-open" :href="route('admin.subjects.index')" :current="request()->routeIs('admin.subjects.*')" wire:navigate>
+                            Subjects
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="clipboard-document-list" :href="route('admin.assignments.index')" :current="request()->routeIs('admin.assignments.*')" wire:navigate>
+                            Assignments
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
                 @endif
 
                 {{-- Teacher --}}

@@ -12,6 +12,12 @@ use App\Livewire\Admin\Academic\SchoolYearManager;
 use App\Livewire\Admin\Academic\GradeLevelManager;
 use App\Livewire\Admin\Academic\SectionManager;
 
+use App\Livewire\Admin\Teachers\TeacherList;
+use App\Livewire\Admin\Teachers\TeacherProfile;
+use App\Livewire\Admin\Teachers\TeacherForm;
+use App\Livewire\Admin\Teachers\SubjectManager;
+use App\Livewire\Admin\Teachers\AssignmentManager;
+
 Route::view('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -26,6 +32,12 @@ Route::middleware(['auth', 'role:superadmin,admin'])->prefix('admin')->name('adm
     Route::get('/academic/school-years', SchoolYearManager::class)->name('academic.school-years');
     Route::get('/academic/grade-levels', GradeLevelManager::class)->name('academic.grade-levels');
     Route::get('/academic/sections', SectionManager::class)->name('academic.sections');
+    
+    Route::get('/teachers', TeacherList::class)->name('teachers.index');
+    Route::get('/teachers/create', TeacherForm::class)->name('teachers.create');
+    Route::get('/teachers/{teacher}', TeacherProfile::class)->name('teachers.show');
+    Route::get('/subjects', SubjectManager::class)->name('subjects.index');
+    Route::get('/assignments', AssignmentManager::class)->name('assignments.index');
 });
 
 Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
