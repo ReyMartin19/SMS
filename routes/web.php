@@ -38,10 +38,14 @@ Route::middleware(['auth', 'role:superadmin,admin'])->prefix('admin')->name('adm
     Route::get('/teachers/{teacher}', TeacherProfile::class)->name('teachers.show');
     Route::get('/subjects', SubjectManager::class)->name('subjects.index');
     Route::get('/assignments', AssignmentManager::class)->name('assignments.index');
+    
+    Route::get('/grades', \App\Livewire\Admin\Grades\GradeOverview::class)->name('grades.index');
+    Route::get('/grades/report-card', \App\Livewire\Admin\Grades\ReportCard::class)->name('grades.report-card');
 });
 
 Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', TeacherDashboard::class)->name('dashboard');
+    Route::get('/grades', \App\Livewire\Teacher\Grades\GradeEntry::class)->name('grades.entry');
 });
 
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {

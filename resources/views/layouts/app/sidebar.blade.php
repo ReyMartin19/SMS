@@ -51,6 +51,15 @@
                             Assignments
                         </flux:sidebar.item>
                     </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Grades" class="grid">
+                        <flux:sidebar.item icon="chart-bar" :href="route('admin.grades.index')" :current="request()->routeIs('admin.grades.index')" wire:navigate>
+                            Grade Overview
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="document-text" :href="route('admin.grades.report-card')" :current="request()->routeIs('admin.grades.report-card')" wire:navigate>
+                            Report Cards
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
                 @endif
 
                 {{-- Teacher --}}
@@ -58,6 +67,12 @@
                     <flux:sidebar.group heading="Main" class="grid">
                         <flux:sidebar.item icon="home" :href="route('teacher.dashboard')" :current="request()->routeIs('teacher.dashboard')" wire:navigate>
                             Dashboard
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Grades" class="grid">
+                        <flux:sidebar.item icon="pencil-square" :href="route('teacher.grades.entry')" :current="request()->routeIs('teacher.grades.entry')" wire:navigate>
+                            Grade Entry
                         </flux:sidebar.item>
                     </flux:sidebar.group>
                 @endif

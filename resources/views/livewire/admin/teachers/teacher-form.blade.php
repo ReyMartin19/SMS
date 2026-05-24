@@ -41,6 +41,7 @@
             </div>
 
             <flux:input wire:model="contact_number" label="Contact Number" />
+            <flux:input wire:model="email" type="email" label="Email Address (Login ID)" />
 
             {{-- Professional Information --}}
             <div class="col-span-1 sm:col-span-2 mt-4">

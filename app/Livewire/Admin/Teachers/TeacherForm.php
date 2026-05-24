@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin\Teachers;
 
 use App\Models\Teacher;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 
 class TeacherForm extends Component
@@ -18,6 +20,7 @@ class TeacherForm extends Component
     public $employee_id = '';
     public $specialization = '';
     public $status = 'active';
+    public $email = '';
 
     public function rules()
     {
@@ -33,12 +36,24 @@ class TeacherForm extends Component
             'employee_id' => 'nullable|string|max:255|unique:teachers,employee_id',
             'specialization' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive',
+            'email' => 'required|email|max:255|unique:users,email',
         ];
     }
 
     public function save()
     {
         $validated = $this->validate();
+
+        // Create the user account for the teacher
+        $user = User::create([
+            'name' => trim($this->first_name . ' ' . $this->last_name),
+            'email' => $this->email,
+            'password' => Hash::make($this->employee_id ?: 'password'),
+            'role' => 'teacher',
+        ]);
+
+        $validated['user_id'] = $user->id;
+        unset($validated['email']);
 
         Teacher::create($validated);
 
