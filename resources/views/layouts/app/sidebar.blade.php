@@ -60,6 +60,29 @@
                             Report Cards
                         </flux:sidebar.item>
                     </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Communication" class="grid">
+                        <flux:sidebar.item icon="megaphone" :href="route('admin.announcements.index')" :current="request()->routeIs('admin.announcements.*')" wire:navigate>
+                            Announcements
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Reports" class="grid">
+                        <flux:sidebar.item icon="chart-bar" :href="route('admin.reports.index')" :current="request()->routeIs('admin.reports.index')" wire:navigate>
+                            Report Center
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="document-text" :href="route('admin.reports.report-card')" :current="request()->routeIs('admin.reports.report-card')" wire:navigate>
+                            Report Cards
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    @if(auth()->user()->role === 'superadmin')
+                        <flux:sidebar.group heading="System" class="grid">
+                            <flux:sidebar.item icon="cog-6-tooth" :href="route('admin.settings.system')" :current="request()->routeIs('admin.settings.system')" wire:navigate>
+                                Settings
+                            </flux:sidebar.item>
+                        </flux:sidebar.group>
+                    @endif
                 @endif
 
                 {{-- Teacher --}}
@@ -75,6 +98,12 @@
                             Grade Entry
                         </flux:sidebar.item>
                     </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Communication" class="grid">
+                        <flux:sidebar.item icon="megaphone" :href="route('teacher.announcements.index')" :current="request()->routeIs('teacher.announcements.index')" wire:navigate>
+                            Announcements
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
                 @endif
 
                 {{-- Student --}}
@@ -84,6 +113,12 @@
                             Dashboard
                         </flux:sidebar.item>
                     </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Communication" class="grid">
+                        <flux:sidebar.item icon="megaphone" :href="route('student.announcements.index')" :current="request()->routeIs('student.announcements.index')" wire:navigate>
+                            Announcements
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
                 @endif
 
                 {{-- Parent --}}
@@ -91,6 +126,12 @@
                     <flux:sidebar.group heading="Main" class="grid">
                         <flux:sidebar.item icon="home" :href="route('parent.dashboard')" :current="request()->routeIs('parent.dashboard')" wire:navigate>
                             Dashboard
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Communication" class="grid">
+                        <flux:sidebar.item icon="megaphone" :href="route('parent.announcements.index')" :current="request()->routeIs('parent.announcements.index')" wire:navigate>
+                            Announcements
                         </flux:sidebar.item>
                     </flux:sidebar.group>
                 @endif

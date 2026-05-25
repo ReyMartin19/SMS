@@ -41,19 +41,38 @@ Route::middleware(['auth', 'role:superadmin,admin'])->prefix('admin')->name('adm
     
     Route::get('/grades', \App\Livewire\Admin\Grades\GradeOverview::class)->name('grades.index');
     Route::get('/grades/report-card', \App\Livewire\Admin\Grades\ReportCard::class)->name('grades.report-card');
+    Route::get('/announcements', \App\Livewire\Admin\Announcements\AnnouncementManager::class)->name('announcements.index');
+
+    // Reports Module
+    Route::get('/reports', \App\Livewire\Admin\Reports\ReportCenter::class)->name('reports.index');
+    Route::get('/reports/report-card', \App\Livewire\Admin\Reports\ReportCard::class)->name('reports.report-card');
+    Route::get('/reports/pdf/enrollment', [\App\Http\Controllers\ReportController::class, 'downloadEnrollmentPdf'])->name('reports.pdf.enrollment');
+    Route::get('/reports/pdf/students', [\App\Http\Controllers\ReportController::class, 'downloadStudentListPdf'])->name('reports.pdf.students');
+    Route::get('/reports/pdf/report-card/{student}', [\App\Http\Controllers\ReportController::class, 'downloadReportCardPdf'])->name('reports.pdf.report-card');
+    Route::get('/reports/excel/enrollment', [\App\Http\Controllers\ReportController::class, 'exportEnrollmentExcel'])->name('reports.excel.enrollment');
+    Route::get('/reports/excel/students', [\App\Http\Controllers\ReportController::class, 'exportStudentListExcel'])->name('reports.excel.students');
+    Route::get('/reports/excel/grades', [\App\Http\Controllers\ReportController::class, 'exportGradesExcel'])->name('reports.excel.grades');
+
+    // System Settings (superadmin only)
+    Route::middleware(['role:superadmin'])->group(function () {
+        Route::get('/settings/system', \App\Livewire\Admin\Settings\SystemSettingsManager::class)->name('settings.system');
+    });
 });
 
 Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', TeacherDashboard::class)->name('dashboard');
     Route::get('/grades', \App\Livewire\Teacher\Grades\GradeEntry::class)->name('grades.entry');
+    Route::get('/announcements', \App\Livewire\Shared\AnnouncementFeed::class)->name('announcements.index');
 });
 
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', StudentDashboard::class)->name('dashboard');
+    Route::get('/announcements', \App\Livewire\Shared\AnnouncementFeed::class)->name('announcements.index');
 });
 
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->name('parent.')->group(function () {
     Route::get('/dashboard', ParentDashboard::class)->name('dashboard');
+    Route::get('/announcements', \App\Livewire\Shared\AnnouncementFeed::class)->name('announcements.index');
 });
 
 require __DIR__.'/settings.php';
