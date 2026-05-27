@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Admin\Settings;
 
+use App\Models\ActivityLog;
 use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
+#[Title('System Settings')]
 class SystemSettingsManager extends Component
 {
     use WithFileUploads;
@@ -90,6 +93,23 @@ class SystemSettingsManager extends Component
         SystemSetting::set('school_id', $this->school_id);
         SystemSetting::set('principal_name', $this->principal_name);
 
+        ActivityLog::log(
+            'updated_settings', 'settings',
+            'Updated system settings — Tab: school',
+            [
+                'new_values' => [
+                    'school_name'     => $this->school_name,
+                    'school_address'  => $this->school_address,
+                    'school_phone'    => $this->school_phone,
+                    'school_email'    => $this->school_email,
+                    'school_division' => $this->school_division,
+                    'school_district' => $this->school_district,
+                    'school_id'       => $this->school_id,
+                    'principal_name'  => $this->principal_name,
+                ],
+            ]
+        );
+
         $this->savedSchool = true;
     }
 
@@ -100,17 +120,19 @@ class SystemSettingsManager extends Component
         ]);
 
         if ($this->newLogo) {
-            // Delete old logo if it exists
             if ($this->currentLogo && Storage::disk('public')->exists($this->currentLogo)) {
                 Storage::disk('public')->delete($this->currentLogo);
             }
-
-            // Store new logo in storage/app/public/logo
             $path = $this->newLogo->store('logo', 'public');
             SystemSetting::set('school_logo', $path);
             $this->currentLogo = $path;
             $this->newLogo = null;
         }
+
+        ActivityLog::log(
+            'updated_settings', 'settings',
+            'Updated system settings — Tab: logo'
+        );
 
         $this->savedLogo = true;
     }
@@ -134,6 +156,17 @@ class SystemSettingsManager extends Component
 
         SystemSetting::set('grading_passing_grade', $this->grading_passing_grade);
         SystemSetting::set('report_card_footer', $this->report_card_footer);
+
+        ActivityLog::log(
+            'updated_settings', 'settings',
+            'Updated system settings — Tab: academic',
+            [
+                'new_values' => [
+                    'grading_passing_grade' => $this->grading_passing_grade,
+                    'report_card_footer'    => $this->report_card_footer,
+                ],
+            ]
+        );
 
         $this->savedAcademic = true;
     }

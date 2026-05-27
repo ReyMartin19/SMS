@@ -17,13 +17,7 @@
         @endif
     </div>
 
-    {{-- Success Messages --}}
-    @if (session()->has('success'))
-        <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-xl text-sm flex items-center gap-2">
-            <i class="ti ti-circle-check text-lg"></i>
-            {{ session('success') }}
-        </div>
-    @endif
+    <x-flash-message />
 
     {{-- Inline Create/Edit Form --}}
     @if ($showForm)
@@ -79,7 +73,11 @@
 
             <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-700">
                 <flux:button variant="ghost" wire:click="cancel">Cancel</flux:button>
-                <flux:button variant="primary" wire:click="save">Save Announcement</flux:button>
+                <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
+                    <i class="ti ti-check" wire:loading.remove wire:target="save"></i>
+                    <flux:icon.loading wire:loading wire:target="save" class="w-4 h-4 mr-1" />
+                    Save Announcement
+                </flux:button>
             </div>
         </div>
     @endif
@@ -122,7 +120,7 @@
     </div>
 
     {{-- Announcement Data Table --}}
-    <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden shadow-sm">
+    <div wire:loading.class="opacity-50 pointer-events-none" class="transition-opacity bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden shadow-sm">
         <table class="w-full text-sm">
             <thead>
                 <tr class="border-b border-zinc-200 dark:border-zinc-700 text-xs text-zinc-400 uppercase tracking-wider bg-zinc-50/50 dark:bg-zinc-900/30">
@@ -198,7 +196,7 @@
                                 <button wire:click="openEdit({{ $announcement->id }})" class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold flex items-center gap-1">
                                     <i class="ti ti-edit"></i> Edit
                                 </button>
-                                <button wire:click="delete({{ $announcement->id }})" wire:confirm="Are you sure you want to delete this announcement?" class="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold flex items-center gap-1">
+                                <button wire:click="delete({{ $announcement->id }})" wire:confirm="Are you sure you want to delete this? This action cannot be undone." class="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold flex items-center gap-1">
                                     <i class="ti ti-trash"></i> Delete
                                 </button>
                             </div>
@@ -206,14 +204,12 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-5 py-16 text-center text-zinc-400">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full w-12 h-12 flex items-center justify-center mb-3">
-                                    <i class="ti ti-megaphone-off text-2xl text-zinc-400"></i>
-                                </div>
-                                <p class="text-sm font-medium">No announcements found.</p>
-                                <p class="text-xs mt-1">Once created, targeted announcements will appear here.</p>
-                            </div>
+                        <td colspan="7" class="px-5 py-4">
+                            <x-empty-state 
+                                icon="ti ti-megaphone-off"
+                                title="No announcements found"
+                                description="Once created, targeted announcements will appear here."
+                            />
                         </td>
                     </tr>
                 @endforelse

@@ -4,20 +4,33 @@
         Admin / <span class="text-zinc-700 dark:text-zinc-200">Students</span>
     </p>
 
+    <x-flash-message />
+
     {{-- Header --}}
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
             <h1 class="text-xl font-medium">Students</h1>
             <p class="text-sm text-zinc-500 mt-1">Manage and view all registered students.</p>
         </div>
-        <a href="{{ route('admin.enrollment.create') }}" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg">
-            <i class="ti ti-plus"></i> Enroll Student
-        </a>
+        <div class="flex items-center gap-2 flex-wrap">
+            <button
+                wire:click="generateAllAccounts"
+                wire:confirm="This will create portal accounts for all students without one. Continue?"
+                wire:loading.attr="disabled"
+                class="flex items-center gap-2 px-4 py-2 border border-zinc-300 dark:border-zinc-600 text-sm rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-60 transition">
+                <i class="ti ti-users"></i>
+                <span wire:loading.remove wire:target="generateAllAccounts">Generate Accounts</span>
+                <span wire:loading wire:target="generateAllAccounts">Generating…</span>
+            </button>
+            <a href="{{ route('admin.enrollment.create') }}" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg">
+                <i class="ti ti-plus"></i> Enroll Student
+            </a>
+        </div>
     </div>
 
     {{-- Filters --}}
     <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 mb-4">
-        <div class="grid grid-cols-5 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
 
             {{-- Search --}}
             <div class="col-span-2 relative">
@@ -78,7 +91,8 @@
     </div>
 
     {{-- Table --}}
-    <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+    <div wire:loading.class="opacity-50 pointer-events-none" class="transition-opacity bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
                 <tr class="border-b border-zinc-100 dark:border-zinc-700 text-xs text-zinc-400 uppercase tracking-wider">
@@ -135,14 +149,17 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-5 py-12 text-center text-zinc-400">
-                            <i class="ti ti-users-off" style="font-size:32px; display:block; margin-bottom:8px"></i>
-                            No students found.
+                        <td colspan="6" class="px-5 py-4">
+                            <x-empty-state 
+                                icon="ti ti-users-off"
+                                title="No students found"
+                            />
                         </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+        </div>
 
         {{-- Pagination --}}
         @if ($students->hasPages())

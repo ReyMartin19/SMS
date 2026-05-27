@@ -2,14 +2,18 @@
 
 namespace App\Livewire\Admin\Students;
 
+use App\Models\ActivityLog;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\SchoolYear;
 use App\Models\Section;
 use App\Models\Student;
+use App\Models\User;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Title('Students')]
 class StudentList extends Component
 {
     use WithPagination;
@@ -26,6 +30,10 @@ class StudentList extends Component
 
     public function mount(): void
     {
+        if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
+            abort(403, 'Access denied.');
+        }
+
         $this->gradeLevels = GradeLevel::orderBy('order')->get();
         $this->schoolYears = SchoolYear::orderByDesc('is_active')->get();
 
@@ -76,6 +84,52 @@ class StudentList extends Component
         $this->resetPage();
     }
 
+    public function generateAllAccounts(): void
+    {
+        $students = Student::whereNull('user_id')->get();
+        $count = 0;
+
+        foreach ($students as $student) {
+            if ($student->lrn) {
+                $email = $student->lrn . '@school.com';
+            } else {
+                $firstName = strtolower(str_replace(' ', '', $student->first_name));
+                $lastName  = strtolower(str_replace(' ', '', $student->last_name));
+                $email     = $firstName . '.' . $lastName . '@school.com';
+            }
+
+            // Ensure email uniqueness
+            $baseEmail = $email;
+            $counter   = 1;
+            while (User::where('email', $email)->exists()) {
+                $email = str_replace('@', $counter . '@', $baseEmail);
+                $counter++;
+            }
+
+            $password = \Carbon\Carbon::parse($student->birthdate)->format('Ymd');
+
+            $user = User::create([
+                'name'                  => $student->first_name . ' ' . $student->last_name,
+                'email'                 => $email,
+                'password'              => bcrypt($password),
+                'role'                  => 'student',
+                'force_password_change' => true,
+            ]);
+
+            $student->update(['user_id' => $user->id]);
+            $count++;
+        }
+
+        if ($count > 0) {
+            ActivityLog::log(
+                'bulk_generated_accounts', 'accounts',
+                "Bulk generated {$count} portal account(s) for students without accounts"
+            );
+        }
+
+        session()->flash('success', $count . ' portal account(s) generated successfully.');
+    }
+
     public function render()
     {
         $students = Student::query()
@@ -94,7 +148,7 @@ class StudentList extends Component
                       ->when($this->sectionFilter, fn ($q) => $q->where('section_id', $this->sectionFilter));
                 });
             })
-            ->with(['enrollments' => function ($q) {
+            ->with(['user', 'enrollments' => function ($q) {
                 $q->with(['gradeLevel', 'section', 'schoolYear'])
                   ->when($this->schoolYearFilter, fn ($q) => $q->where('school_year_id', $this->schoolYearFilter));
             }])

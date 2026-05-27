@@ -2,9 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\ActivityLog;
+use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->registerActivityLogListeners();
     }
 
     /**
@@ -46,5 +52,43 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Register login/logout event listeners for activity logging.
+     */
+    protected function registerActivityLogListeners(): void
+    {
+        Event::listen(Login::class, function (Login $event) {
+            try {
+                ActivityLog::log(
+                    'logged_in', 'auth',
+                    "User {$event->user->name} logged in",
+                    [
+                        'subject_type' => User::class,
+                        'subject_id'   => $event->user->id,
+                    ]
+                );
+            } catch (\Throwable) {
+                // Silently fail if activity_logs table doesn't exist yet (e.g. before migration)
+            }
+        });
+
+        Event::listen(Logout::class, function (Logout $event) {
+            if ($event->user) {
+                try {
+                    ActivityLog::log(
+                        'logged_out', 'auth',
+                        "User {$event->user->name} logged out",
+                        [
+                            'subject_type' => User::class,
+                            'subject_id'   => $event->user->id,
+                        ]
+                    );
+                } catch (\Throwable) {
+                    // Silently fail if activity_logs table doesn't exist yet
+                }
+            }
+        });
     }
 }

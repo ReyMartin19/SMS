@@ -5,8 +5,10 @@ namespace App\Livewire\Admin\Teachers;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Add Teacher')]
 class TeacherForm extends Component
 {
     public $first_name = '';
@@ -21,6 +23,13 @@ class TeacherForm extends Component
     public $specialization = '';
     public $status = 'active';
     public $email = '';
+
+    public function mount(): void
+    {
+        if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
+            abort(403, 'Access denied.');
+        }
+    }
 
     public function rules()
     {
@@ -42,6 +51,16 @@ class TeacherForm extends Component
 
     public function save()
     {
+        $this->first_name = trim(strip_tags($this->first_name));
+        $this->middle_name = trim(strip_tags($this->middle_name));
+        $this->last_name = trim(strip_tags($this->last_name));
+        $this->suffix = trim(strip_tags($this->suffix));
+        $this->address = trim(strip_tags($this->address));
+        $this->contact_number = trim(strip_tags($this->contact_number));
+        $this->employee_id = trim(strip_tags($this->employee_id));
+        $this->specialization = trim(strip_tags($this->specialization));
+        $this->email = trim(strip_tags($this->email));
+
         $validated = $this->validate();
 
         // Create the user account for the teacher

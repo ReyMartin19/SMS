@@ -35,15 +35,7 @@
         </div>
     </div>
 
-    @if (session('success'))
-        <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 rounded-xl flex items-start gap-3 shadow-sm">
-            <i class="ti ti-circle-check text-lg mt-0.5"></i>
-            <div>
-                <p class="font-medium">Success!</p>
-                <p class="text-sm opacity-90">{{ session('success') }}</p>
-            </div>
-        </div>
-    @endif
+    <x-flash-message />
 
     <div class="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-6 items-start">
 
@@ -306,8 +298,10 @@
 
                         <div class="flex justify-end gap-3 pt-6 border-t border-zinc-100 dark:border-zinc-800">
                             <flux:button variant="ghost" wire:click="cancelCreateStudent" class="px-5">Cancel</flux:button>
-                            <flux:button variant="primary" wire:click="saveStudent" class="px-6 shadow-sm bg-blue-600 hover:bg-blue-700">
-                                <i class="ti ti-device-floppy mr-2"></i> Save Profile & Proceed
+                            <flux:button variant="primary" wire:click="saveStudent" wire:loading.attr="disabled" class="px-6 shadow-sm bg-blue-600 hover:bg-blue-700">
+                                <i class="ti ti-device-floppy mr-2" wire:loading.remove wire:target="saveStudent"></i>
+                                <flux:icon.loading wire:loading wire:target="saveStudent" class="w-4 h-4 mr-2" />
+                                Save Profile & Proceed
                             </flux:button>
                         </div>
                     </div>
@@ -388,8 +382,10 @@
                         <i class="ti ti-info-square rounded text-blue-500 text-lg"></i> 
                         <span>Please review all details before confirming.</span>
                     </div>
-                    <flux:button variant="primary" wire:click="enroll" class="w-full sm:w-auto px-8 py-2.5 shadow-md hover:shadow-lg transition-all bg-blue-600 hover:bg-blue-700 flex justify-center items-center gap-2" :disabled="!$selectedStudent">
-                        Confirm Enrollment <i class="ti ti-check text-lg"></i>
+                    <flux:button variant="primary" wire:click="enroll" wire:loading.attr="disabled" class="w-full sm:w-auto px-8 py-2.5 shadow-md hover:shadow-lg transition-all bg-blue-600 hover:bg-blue-700 flex justify-center items-center gap-2" :disabled="!$selectedStudent">
+                        Confirm Enrollment 
+                        <i class="ti ti-check text-lg" wire:loading.remove wire:target="enroll"></i>
+                        <flux:icon.loading wire:loading wire:target="enroll" class="w-4 h-4" />
                     </flux:button>
                 </div>
             </div>

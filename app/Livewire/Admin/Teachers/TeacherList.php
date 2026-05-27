@@ -3,9 +3,11 @@
 namespace App\Livewire\Admin\Teachers;
 
 use App\Models\Teacher;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Title('Teachers')]
 class TeacherList extends Component
 {
     use WithPagination;

@@ -12,7 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'role'                  => \App\Http\Middleware\RoleMiddleware::class,
+            'force.password.change' => \App\Http\Middleware\ForcePasswordChange::class,
+        ]);
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\ForcePasswordChange::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

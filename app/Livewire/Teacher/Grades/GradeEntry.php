@@ -2,13 +2,16 @@
 
 namespace App\Livewire\Teacher\Grades;
 
+use Livewire\Attributes\Title;
 use Livewire\Component;
+use App\Models\ActivityLog;
 use App\Models\SchoolYear;
 use App\Models\TeacherAssignment;
 use App\Models\Enrollment;
 use App\Models\StudentGrade;
 use Illuminate\Support\Facades\Auth;
 
+#[Title('Grade Entry')]
 class GradeEntry extends Component
 {
     public $schoolYearId;
@@ -100,13 +103,21 @@ class GradeEntry extends Component
         }
     }
 
-    public function saveGrades()
+    public function rules()
     {
-        $this->validate([
+        return [
+            'grades.*.student_name' => 'nullable',
             'grades.*.written_works_score' => 'nullable|numeric|min:0|max:100',
             'grades.*.performance_task_score' => 'nullable|numeric|min:0|max:100',
             'grades.*.quarterly_assessment_score' => 'nullable|numeric|min:0|max:100',
-        ]);
+            'grades.*.quarter_grade' => 'nullable',
+            'grades.*.remarks' => 'nullable',
+        ];
+    }
+
+    public function saveGrades()
+    {
+        $this->validate();
 
         foreach ($this->grades as $gradeId => $data) {
             $grade = StudentGrade::find($gradeId);
@@ -121,6 +132,21 @@ class GradeEntry extends Component
                 $this->grades[$gradeId]['quarter_grade'] = $grade->quarter_grade;
                 $this->grades[$gradeId]['remarks'] = $grade->remarks;
             }
+        }
+
+        $assignment = TeacherAssignment::with(['subject', 'section'])->find($this->assignmentId);
+        if ($assignment) {
+            ActivityLog::log(
+                'entered_grades', 'grades',
+                "Entered grades for section {$assignment->section->name} — Subject {$assignment->subject->name} Q{$this->quarter}",
+                [
+                    'new_values' => [
+                        'section_id' => $assignment->section_id,
+                        'subject_id' => $assignment->subject_id,
+                        'quarter'    => $this->quarter,
+                    ],
+                ]
+            );
         }
 
         session()->flash('success', 'Grades saved successfully!');

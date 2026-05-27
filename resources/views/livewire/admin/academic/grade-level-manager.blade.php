@@ -1,5 +1,5 @@
 <div>
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
             <h1 class="text-xl font-medium">Grade Levels</h1>
             <p class="text-sm text-zinc-500 mt-1">Manage grade levels for all school types.</p>
@@ -11,11 +11,7 @@
         @endif
     </div>
 
-    @if (session('success'))
-        <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-xl text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
+    <x-flash-message />
 
     {{-- Form --}}
     @if ($showForm)
@@ -23,7 +19,7 @@
             <p class="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-4">
                 {{ $editingId ? 'Edit Grade Level' : 'New Grade Level' }}
             </p>
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-xs text-zinc-500 mb-1">Name <span class="text-red-400">*</span></label>
                     <flux:input wire:model="name" placeholder="e.g. Grade 7" />
@@ -46,13 +42,18 @@
             </div>
             <div class="flex justify-end gap-2 mt-4">
                 <flux:button variant="ghost" wire:click="cancel">Cancel</flux:button>
-                <flux:button variant="primary" wire:click="save">Save</flux:button>
+                <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
+                    <i class="ti ti-check" wire:loading.remove wire:target="save"></i>
+                    <flux:icon.loading wire:loading wire:target="save" class="w-4 h-4 mr-1" />
+                    Save
+                </flux:button>
             </div>
         </div>
     @endif
 
     {{-- Table --}}
-    <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+    <div wire:loading.class="opacity-50 pointer-events-none" class="transition-opacity bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
                 <tr class="border-b border-zinc-100 dark:border-zinc-700 text-xs text-zinc-400 uppercase tracking-wider">
@@ -82,18 +83,21 @@
                         </td>
                         <td class="px-5 py-3 text-right flex items-center justify-end gap-3">
                             <button wire:click="openEdit({{ $level->id }})" class="text-xs text-blue-500 hover:text-blue-700">Edit</button>
-                            <button wire:click="delete({{ $level->id }})" wire:confirm="Delete this grade level?" class="text-xs text-red-400 hover:text-red-600">Delete</button>
+                            <button wire:click="delete({{ $level->id }})" wire:confirm="Are you sure you want to delete this? This action cannot be undone." class="text-xs text-red-400 hover:text-red-600">Delete</button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-5 py-12 text-center text-zinc-400">
-                            <i class="ti ti-school-off" style="font-size:32px; display:block; margin-bottom:8px"></i>
-                            No grade levels found.
+                        <td colspan="4" class="px-5 py-4">
+                            <x-empty-state 
+                                icon="ti ti-school-off"
+                                title="No grade levels found"
+                            />
                         </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>

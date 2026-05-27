@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Admin\Grades;
 
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use App\Models\SchoolYear;
 use App\Models\Student;
 use App\Models\StudentGrade;
 
+#[Title('Report Cards')]
 class ReportCard extends Component
 {
     public $studentId;

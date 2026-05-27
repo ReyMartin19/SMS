@@ -5,11 +5,7 @@
         <span class="text-zinc-700 dark:text-zinc-200">{{ $student->last_name }}, {{ $student->first_name }}</span>
     </p>
 
-    @if (session('success'))
-        <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-xl text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
+    <x-flash-message />
 
     {{-- Header --}}
     <div class="flex items-start justify-between mb-6">
@@ -36,8 +32,10 @@
                 <button wire:click="cancelEdit" class="flex items-center gap-2 px-4 py-2 border border-zinc-300 dark:border-zinc-600 text-sm rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700">
                     Cancel
                 </button>
-                <button wire:click="save" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg">
-                    <i class="ti ti-check" style="font-size:15px"></i> Save changes
+                <button wire:click="save" wire:loading.attr="disabled" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg">
+                    <i class="ti ti-check" style="font-size:15px" wire:loading.remove wire:target="save"></i>
+                    <flux:icon.loading wire:loading wire:target="save" class="w-4 h-4" />
+                    Save changes
                 </button>
             @endif
         </div>
@@ -214,6 +212,38 @@
                     <span class="px-3 py-1 rounded-full text-xs font-medium {{ $color }}">
                         {{ ucfirst($student->status) }}
                     </span>
+                @endif
+            </div>
+
+            {{-- Portal Account --}}
+            <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-5">
+                <p class="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-4">Portal Account</p>
+
+                @if ($student->user)
+                    <div class="space-y-3">
+                        <div>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                                Active Account
+                            </span>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-zinc-400 mb-0.5">Email address</label>
+                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-200">{{ $student->user->email }}</p>
+                        </div>
+                    </div>
+                @else
+                    <div class="space-y-3">
+                        <div>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
+                                No Account Linked
+                            </span>
+                        </div>
+                        <p class="text-xs text-zinc-400">This student does not have a portal account yet. Create one to allow them to access their portal.</p>
+                        <flux:button wire:click="createAccount" wire:loading.attr="disabled" variant="primary" class="w-full">
+                            <span wire:loading.remove wire:target="createAccount">Create Account</span>
+                            <span wire:loading wire:target="createAccount">Creating...</span>
+                        </flux:button>
+                    </div>
                 @endif
             </div>
 

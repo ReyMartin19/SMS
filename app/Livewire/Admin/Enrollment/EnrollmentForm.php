@@ -2,13 +2,17 @@
 
 namespace App\Livewire\Admin\Enrollment;
 
+use App\Models\ActivityLog;
 use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\SchoolYear;
 use App\Models\Section;
 use App\Models\Student;
+use App\Models\User;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Enroll Student')]
 class EnrollmentForm extends Component
 {
 
@@ -48,6 +52,10 @@ class EnrollmentForm extends Component
 
     public function mount(): void
     {
+        if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
+            abort(403, 'Access denied.');
+        }
+
         $this->schoolYears = SchoolYear::all();
         $this->gradeLevels = GradeLevel::orderBy('order')->get();
         $this->enrolled_at = now()->toDateString();
@@ -118,14 +126,82 @@ class EnrollmentForm extends Component
             'enrolled_at'    => $this->enrolled_at,
         ]);
 
-        session()->flash('success', 'Student enrolled successfully.');
+        $credentials = $this->createStudentAccount($this->selectedStudent);
+
+        $gradeLevel = GradeLevel::find($this->grade_level_id);
+        $section    = Section::find($this->section_id);
+
+        ActivityLog::log(
+            'enrolled_student', 'enrollment',
+            "Enrolled {$this->selectedStudent->first_name} {$this->selectedStudent->last_name} to {$gradeLevel->name} - {$section->name}",
+            [
+                'subject_type' => Student::class,
+                'subject_id'   => $this->selectedStudent->id,
+                'new_values'   => [
+                    'school_year_id' => $this->school_year_id,
+                    'grade_level_id' => $this->grade_level_id,
+                    'section_id'     => $this->section_id,
+                ],
+            ]
+        );
+
+        $message = 'Student enrolled successfully. ';
+        if ($credentials) {
+            $message .= 'Portal account created — Email: ' . $credentials['email'] . ' | Password: ' . $credentials['password'];
+        } else {
+            $message .= 'Student already has a portal account.';
+        }
+
+        session()->flash('success', $message);
         $this->reset(['selectedStudent', 'grade_level_id', 'section_id', 'search']);
+    }
+
+    /**
+     * Generate a portal account for a student if they don't have one.
+     * Returns ['email' => ..., 'password' => ...] on creation, or null if already existed.
+     */
+    private function createStudentAccount(Student $student): ?array
+    {
+        if ($student->user_id) {
+            return null;
+        }
+
+        // Generate email
+        if ($student->lrn) {
+            $email = $student->lrn . '@school.com';
+        } else {
+            $firstName = strtolower(str_replace(' ', '', $student->first_name));
+            $lastName  = strtolower(str_replace(' ', '', $student->last_name));
+            $email     = $firstName . '.' . $lastName . '@school.com';
+        }
+
+        // Ensure email uniqueness
+        $baseEmail = $email;
+        $counter   = 1;
+        while (User::where('email', $email)->exists()) {
+            $email = str_replace('@', $counter . '@', $baseEmail);
+            $counter++;
+        }
+
+        // Password: birthdate in Ymd format
+        $password = \Carbon\Carbon::parse($student->birthdate)->format('Ymd');
+
+        $user = User::create([
+            'name'                  => $student->first_name . ' ' . $student->last_name,
+            'email'                 => $email,
+            'password'              => bcrypt($password),
+            'role'                  => 'student',
+            'force_password_change' => true,
+        ]);
+
+        $student->update(['user_id' => $user->id]);
+
+        return ['email' => $email, 'password' => $password];
     }
 
     public function showCreateStudent(): void
     {
         $this->showStudentForm = true;
-        $this->selectedStudent = null;
     }
 
     public function cancelCreateStudent(): void
@@ -141,6 +217,18 @@ class EnrollmentForm extends Component
 
     public function saveStudent(): void
     {
+        $this->first_name = trim(strip_tags($this->first_name));
+        $this->middle_name = trim(strip_tags($this->middle_name));
+        $this->last_name = trim(strip_tags($this->last_name));
+        $this->suffix = trim(strip_tags($this->suffix));
+        $this->birthplace = trim(strip_tags($this->birthplace));
+        $this->address = trim(strip_tags($this->address));
+        $this->contact_number = trim(strip_tags($this->contact_number));
+        $this->guardian_name = trim(strip_tags($this->guardian_name));
+        $this->guardian_relationship = trim(strip_tags($this->guardian_relationship));
+        $this->guardian_contact = trim(strip_tags($this->guardian_contact));
+        $this->lrn = trim(strip_tags($this->lrn));
+
         $this->validate([
             'first_name' => 'required|string|max:255',
             'last_name'  => 'required|string|max:255',
@@ -166,6 +254,16 @@ class EnrollmentForm extends Component
             'lrn'                    => $this->lrn ?: null,
             'status'                 => 'active',
         ]);
+
+        ActivityLog::log(
+            'created_student', 'student',
+            "Created student record for {$student->first_name} {$student->last_name}",
+            [
+                'subject_type' => Student::class,
+                'subject_id'   => $student->id,
+                'new_values'   => $student->toArray(),
+            ]
+        );
 
         $this->selectedStudent = $student;
         $this->showStudentForm = false;

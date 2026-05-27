@@ -10,7 +10,9 @@ use App\Models\Subject;
 use App\Models\Student;
 use App\Models\StudentGrade;
 use Livewire\Component;
+use Livewire\Attributes\Title;
 
+#[Title('Report Cards')]
 class ReportCard extends Component
 {
     public $studentId;

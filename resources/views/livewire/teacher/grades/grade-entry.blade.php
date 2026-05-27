@@ -12,11 +12,7 @@
         </div>
     </div>
 
-    @if (session('success'))
-        <div class="mb-4 bg-green-50 dark:bg-green-900/20 text-green-700 rounded-xl p-4 text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
+    <x-flash-message />
 
     <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -59,7 +55,7 @@
                         </thead>
                         <tbody class="divide-y divide-zinc-100 dark:divide-zinc-700">
                             @foreach($grades as $gradeId => $data)
-                                <tr>
+                                <tr wire:key="grade-row-{{ $gradeId }}-{{ $this->quarter }}">
                                     <td class="px-6 py-3 whitespace-nowrap">{{ $data['student_name'] }}</td>
                                     <td class="px-6 py-3 whitespace-nowrap">
                                         <flux:input type="number" step="0.01" wire:model="grades.{{ $gradeId }}.written_works_score" class="w-full" size="sm" />
@@ -89,7 +85,11 @@
                 </div>
             </div>
             <div class="flex justify-end">
-                <flux:button type="submit" variant="primary" icon="check">Save All Grades</flux:button>
+                <flux:button type="submit" variant="primary" wire:loading.attr="disabled">
+                    <i class="ti ti-check" wire:loading.remove wire:target="saveGrades"></i>
+                    <flux:icon.loading wire:loading wire:target="saveGrades" class="w-4 h-4" />
+                    Save All Grades
+                </flux:button>
             </div>
         </form>
     @else

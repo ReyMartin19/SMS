@@ -3,8 +3,10 @@
 namespace App\Livewire\Admin\Teachers;
 
 use App\Models\Teacher;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Teacher Profile')]
 class TeacherProfile extends Component
 {
     public Teacher $teacher;

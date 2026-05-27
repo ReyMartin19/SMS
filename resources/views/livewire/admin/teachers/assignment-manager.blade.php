@@ -15,11 +15,7 @@
         </div>
     </div>
 
-    @if (session()->has('success'))
-        <div class="mb-6 rounded-xl bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-            {{ session('success') }}
-        </div>
-    @endif
+    <x-flash-message />
 
     @if($showForm)
         <div class="mb-6 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-800">
@@ -100,13 +96,16 @@
                                 {{ $assignment->schoolYear->name ?? '' }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right">
-                                <flux:button wire:click="delete({{ $assignment->id }})" wire:confirm="Are you sure you want to remove this assignment?" variant="ghost" size="sm" icon="trash" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300" />
+                                <flux:button wire:click="delete({{ $assignment->id }})" wire:confirm="Are you sure you want to delete this? This action cannot be undone." variant="ghost" size="sm" icon="trash" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300" />
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-zinc-500">
-                                No assignments found.
+                            <td colspan="5" class="px-6 py-4">
+                                <x-empty-state 
+                                    icon="ti ti-users-off"
+                                    title="No assignments found"
+                                />
                             </td>
                         </tr>
                     @endforelse

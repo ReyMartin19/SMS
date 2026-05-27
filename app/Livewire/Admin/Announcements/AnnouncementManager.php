@@ -2,14 +2,24 @@
 
 namespace App\Livewire\Admin\Announcements;
 
+use App\Models\ActivityLog;
 use App\Models\Announcement;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
 
+#[Title('Announcements')]
 class AnnouncementManager extends Component
 {
     use WithPagination;
+
+    public function mount(): void
+    {
+        if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
+            abort(403, 'Access denied.');
+        }
+    }
 
     // Form fields
     public bool $showForm = false;
@@ -87,35 +97,57 @@ class AnnouncementManager extends Component
     public function save(): void
     {
         $this->validate([
-            'title' => 'required|string|max:255',
-            'body' => 'required|string',
-            'audience' => 'required|in:all,admin,teacher,student,parent',
-            'is_pinned' => 'boolean',
+            'title'       => 'required|string|max:255',
+            'body'        => 'required|string',
+            'audience'    => 'required|in:all,admin,teacher,student,parent',
+            'is_pinned'   => 'boolean',
             'published_at' => 'nullable|date',
             'expiry_date' => 'nullable|date|after_or_equal:today',
         ]);
 
-        Announcement::updateOrCreate(
+        $isNew = ! $this->editingId;
+
+        $announcement = Announcement::updateOrCreate(
             ['id' => $this->editingId],
             [
-                'user_id' => Auth::id(),
-                'title' => $this->title,
-                'body' => $this->body,
-                'audience' => $this->audience,
-                'is_pinned' => $this->is_pinned,
+                'user_id'      => Auth::id(),
+                'title'        => $this->title,
+                'body'         => $this->body,
+                'audience'     => $this->audience,
+                'is_pinned'    => $this->is_pinned,
                 'published_at' => $this->published_at ?: null,
-                'expiry_date' => $this->expiry_date ?: null,
+                'expiry_date'  => $this->expiry_date ?: null,
             ]
         );
 
-        session()->flash('success', $this->editingId ? 'Announcement updated successfully.' : 'Announcement created successfully.');
-        
+        ActivityLog::log(
+            $isNew ? 'created_announcement' : 'updated_announcement',
+            'announcements',
+            ($isNew ? 'Created' : 'Updated') . " announcement: {$this->title}",
+            [
+                'subject_type' => Announcement::class,
+                'subject_id'   => $announcement->id,
+            ]
+        );
+
+        session()->flash('success', $isNew ? 'Announcement created successfully.' : 'Announcement updated successfully.');
+
         $this->resetForm();
     }
 
     public function delete(int $id): void
     {
         $announcement = Announcement::findOrFail($id);
+
+        ActivityLog::log(
+            'deleted_announcement', 'announcements',
+            "Deleted announcement: {$announcement->title}",
+            [
+                'subject_type' => Announcement::class,
+                'subject_id'   => $id,
+            ]
+        );
+
         $announcement->delete();
 
         session()->flash('success', 'Announcement deleted successfully.');
@@ -165,8 +197,8 @@ class AnnouncementManager extends Component
         }
 
         $announcements = $query->orderBy('is_pinned', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->latest()
+            ->paginate(15);
 
         return view('livewire.admin.announcements.announcement-manager', [
             'announcements' => $announcements,

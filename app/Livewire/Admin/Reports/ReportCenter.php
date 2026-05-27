@@ -7,8 +7,10 @@ use App\Models\GradeLevel;
 use App\Models\Section;
 use App\Models\Subject;
 use App\Models\Student;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Report Center')]
 class ReportCenter extends Component
 {
     // Enrollment Report Filters

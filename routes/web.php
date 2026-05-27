@@ -17,11 +17,24 @@ use App\Livewire\Admin\Teachers\TeacherProfile;
 use App\Livewire\Admin\Teachers\TeacherForm;
 use App\Livewire\Admin\Teachers\SubjectManager;
 use App\Livewire\Admin\Teachers\AssignmentManager;
+use App\Livewire\Admin\Logs\ActivityLogViewer;
 
 Route::view('/', 'welcome')->name('home');
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('password/change', \App\Livewire\Auth\ChangePassword::class)->name('password.change');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', function () {
+        return match(auth()->user()->role) {
+            'superadmin', 'admin' => redirect()->route('admin.dashboard'),
+            'teacher'             => redirect()->route('teacher.dashboard'),
+            'student'             => redirect()->route('student.dashboard'),
+            'parent'              => redirect()->route('parent.dashboard'),
+            default               => redirect()->route('home'),
+        };
+    })->name('dashboard');
 });
 
 Route::middleware(['auth', 'role:superadmin,admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -56,6 +69,7 @@ Route::middleware(['auth', 'role:superadmin,admin'])->prefix('admin')->name('adm
     // System Settings (superadmin only)
     Route::middleware(['role:superadmin'])->group(function () {
         Route::get('/settings/system', \App\Livewire\Admin\Settings\SystemSettingsManager::class)->name('settings.system');
+        Route::get('/logs', ActivityLogViewer::class)->name('logs.index');
     });
 });
 
@@ -67,12 +81,14 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
 
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', StudentDashboard::class)->name('dashboard');
-    Route::get('/announcements', \App\Livewire\Shared\AnnouncementFeed::class)->name('announcements.index');
+    Route::get('/grades', \App\Livewire\Student\Grades\GradeViewer::class)->name('grades.index');
+    Route::get('/announcements', \App\Livewire\Student\Announcements\AnnouncementFeed::class)->name('announcements.index');
 });
 
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->name('parent.')->group(function () {
     Route::get('/dashboard', ParentDashboard::class)->name('dashboard');
-    Route::get('/announcements', \App\Livewire\Shared\AnnouncementFeed::class)->name('announcements.index');
+    Route::get('/grades', \App\Livewire\Parent\Grades\GradeViewer::class)->name('grades.index');
+    Route::get('/announcements', \App\Livewire\Parent\Announcements\AnnouncementFeed::class)->name('announcements.index');
 });
 
 require __DIR__.'/settings.php';

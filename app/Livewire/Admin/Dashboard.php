@@ -6,8 +6,10 @@ use App\Models\Enrollment;
 use App\Models\GradeLevel;
 use App\Models\SchoolYear;
 use App\Models\Student;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Dashboard')]
 class Dashboard extends Component
 {
     public $totalStudents;

@@ -14,11 +14,7 @@
         </div>
     </div>
 
-    @if (session('success'))
-        <div class="mb-4 bg-green-50 dark:bg-green-900/20 text-green-700 rounded-xl p-4 text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
+    <x-flash-message />
 
     <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -65,13 +61,17 @@
                 <flux:input type="number" step="0.01" wire:model="quarterly_assessment_score" label="Quarterly Assessment (25%)" />
                 <div class="sm:col-span-3 flex justify-end gap-2 mt-4">
                     <flux:button variant="ghost" wire:click="closeForm">Cancel</flux:button>
-                    <flux:button variant="primary" type="submit">Save Grade</flux:button>
+                    <flux:button variant="primary" type="submit" wire:loading.attr="disabled">
+                        <i class="ti ti-check" wire:loading.remove wire:target="saveGrade"></i>
+                        <flux:icon.loading wire:loading wire:target="saveGrade" class="w-4 h-4" />
+                        Save Grade
+                    </flux:button>
                 </div>
             </form>
         </div>
     @endif
 
-    <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+    <div wire:loading.class="opacity-50 pointer-events-none" class="transition-opacity bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm divide-y divide-zinc-100 dark:divide-zinc-700">
                 <thead class="bg-zinc-50 dark:bg-zinc-800/50">
@@ -110,12 +110,11 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-8 text-center text-zinc-500">
-                                @if($schoolYearId && $sectionId && $subjectId && $quarter)
-                                    No grades found.
-                                @else
-                                    Select filters to view grades.
-                                @endif
+                            <td colspan="7" class="px-6 py-4">
+                                <x-empty-state 
+                                    icon="ti ti-chart-bar"
+                                    title="{{ $schoolYearId && $sectionId && $subjectId && $quarter ? 'No grades found' : 'Select filters to view grades' }}"
+                                />
                             </td>
                         </tr>
                     @endforelse

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Student extends Model
 {
     protected $fillable = [
-        'user_id', 'first_name', 'middle_name', 'last_name', 'suffix',
+        'user_id', 'parent_user_id', 'first_name', 'middle_name', 'last_name', 'suffix',
         'gender', 'birthdate', 'birthplace', 'address', 'contact_number',
         'guardian_name', 'guardian_relationship', 'guardian_contact',
         'lrn', 'photo', 'status',
@@ -24,6 +24,11 @@ class Student extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'parent_user_id');
     }
     
     public function enrollments(): HasMany

@@ -3,9 +3,11 @@
 namespace App\Livewire\Admin\Teachers;
 
 use App\Models\Subject;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Title('Subjects')]
 class SubjectManager extends Component
 {
     use WithPagination;

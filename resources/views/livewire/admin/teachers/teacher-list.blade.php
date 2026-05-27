@@ -14,11 +14,7 @@
         </div>
     </div>
 
-    @if (session()->has('success'))
-        <div class="mb-6 rounded-xl bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-            {{ session('success') }}
-        </div>
-    @endif
+    <x-flash-message />
 
     <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
         <div class="border-b border-zinc-200 p-4 dark:border-zinc-700 flex flex-col gap-4 sm:flex-row">
@@ -62,13 +58,16 @@
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right">
                                 <flux:button href="{{ route('admin.teachers.show', $teacher) }}" wire:navigate variant="ghost" size="sm" icon="eye" class="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300" />
-                                <flux:button wire:click="delete({{ $teacher->id }})" wire:confirm="Are you sure you want to delete this teacher?" variant="ghost" size="sm" icon="trash" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300" />
+                                <flux:button wire:click="delete({{ $teacher->id }})" wire:confirm="Are you sure you want to delete this? This action cannot be undone." variant="ghost" size="sm" icon="trash" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300" />
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-zinc-500">
-                                No teachers found.
+                            <td colspan="5" class="px-6 py-4">
+                                <x-empty-state 
+                                    icon="ti ti-users-off"
+                                    title="No teachers found"
+                                />
                             </td>
                         </tr>
                     @endforelse

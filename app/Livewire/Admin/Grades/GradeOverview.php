@@ -3,12 +3,15 @@
 namespace App\Livewire\Admin\Grades;
 
 use Livewire\Component;
+use Livewire\Attributes\Title;
+use App\Models\ActivityLog;
 use App\Models\SchoolYear;
 use App\Models\GradeLevel;
 use App\Models\Section;
 use App\Models\Subject;
 use App\Models\StudentGrade;
 
+#[Title('Grade Overview')]
 class GradeOverview extends Component
 {
     public $schoolYearId;
@@ -55,17 +58,34 @@ class GradeOverview extends Component
     public function saveGrade()
     {
         $this->validate([
-            'written_works_score' => 'nullable|numeric|min:0|max:100',
-            'performance_task_score' => 'nullable|numeric|min:0|max:100',
-            'quarterly_assessment_score' => 'nullable|numeric|min:0|max:100',
+            'written_works_score'          => 'nullable|numeric|min:0|max:100',
+            'performance_task_score'       => 'nullable|numeric|min:0|max:100',
+            'quarterly_assessment_score'   => 'nullable|numeric|min:0|max:100',
         ]);
 
         $grade = StudentGrade::findOrFail($this->editingGradeId);
-        $grade->written_works_score = $this->written_works_score !== '' ? $this->written_works_score : null;
-        $grade->performance_task_score = $this->performance_task_score !== '' ? $this->performance_task_score : null;
-        $grade->quarterly_assessment_score = $this->quarterly_assessment_score !== '' ? $this->quarterly_assessment_score : null;
+
+        $oldValues = $grade->only([
+            'written_works_score', 'performance_task_score',
+            'quarterly_assessment_score', 'quarter_grade', 'remarks',
+        ]);
+
+        $grade->written_works_score          = $this->written_works_score !== '' ? $this->written_works_score : null;
+        $grade->performance_task_score       = $this->performance_task_score !== '' ? $this->performance_task_score : null;
+        $grade->quarterly_assessment_score   = $this->quarterly_assessment_score !== '' ? $this->quarterly_assessment_score : null;
         $grade->computeQuarterGrade();
         $grade->save();
+
+        ActivityLog::log(
+            'overrode_grade', 'grades',
+            "Overrode grade for student ID {$grade->student_id} — Subject ID {$grade->subject_id} Q{$grade->quarter}",
+            [
+                'subject_type' => StudentGrade::class,
+                'subject_id'   => $grade->id,
+                'old_values'   => $oldValues,
+                'new_values'   => $grade->fresh()->only(array_keys($oldValues)),
+            ]
+        );
 
         $this->showForm = false;
         $this->editingGradeId = null;
@@ -84,7 +104,7 @@ class GradeOverview extends Component
             return collect();
         }
 
-        return StudentGrade::with(['student'])
+        return StudentGrade::with(['student', 'subject', 'section'])
             ->where('school_year_id', $this->schoolYearId)
             ->where('section_id', $this->sectionId)
             ->where('subject_id', $this->subjectId)

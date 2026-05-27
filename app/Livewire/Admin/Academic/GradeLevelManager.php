@@ -3,10 +3,19 @@
 namespace App\Livewire\Admin\Academic;
 
 use App\Models\GradeLevel;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Grade Levels')]
 class GradeLevelManager extends Component
 {
+    public function mount(): void
+    {
+        if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
+            abort(403, 'Access denied.');
+        }
+    }
+
     public bool $showForm = false;
     public ?int $editingId = null;
 

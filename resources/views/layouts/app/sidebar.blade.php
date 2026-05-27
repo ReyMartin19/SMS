@@ -81,6 +81,9 @@
                             <flux:sidebar.item icon="cog-6-tooth" :href="route('admin.settings.system')" :current="request()->routeIs('admin.settings.system')" wire:navigate>
                                 Settings
                             </flux:sidebar.item>
+                            <flux:sidebar.item icon="clipboard-document-list" :href="route('admin.logs.index')" :current="request()->routeIs('admin.logs.index')" wire:navigate>
+                                Activity Logs
+                            </flux:sidebar.item>
                         </flux:sidebar.group>
                     @endif
                 @endif
@@ -114,6 +117,12 @@
                         </flux:sidebar.item>
                     </flux:sidebar.group>
 
+                    <flux:sidebar.group heading="Academics" class="grid">
+                        <flux:sidebar.item icon="academic-cap" :href="route('student.grades.index')" :current="request()->routeIs('student.grades.index')" wire:navigate>
+                            My Grades
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
                     <flux:sidebar.group heading="Communication" class="grid">
                         <flux:sidebar.item icon="megaphone" :href="route('student.announcements.index')" :current="request()->routeIs('student.announcements.index')" wire:navigate>
                             Announcements
@@ -126,6 +135,12 @@
                     <flux:sidebar.group heading="Main" class="grid">
                         <flux:sidebar.item icon="home" :href="route('parent.dashboard')" :current="request()->routeIs('parent.dashboard')" wire:navigate>
                             Dashboard
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    <flux:sidebar.group heading="Academics" class="grid">
+                        <flux:sidebar.item icon="academic-cap" :href="route('parent.grades.index')" :current="request()->routeIs('parent.grades.index')" wire:navigate>
+                            Child's Grades
                         </flux:sidebar.item>
                     </flux:sidebar.group>
 

@@ -4,8 +4,10 @@ namespace App\Livewire\Admin\Academic;
 
 use App\Models\GradeLevel;
 use App\Models\Section;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Sections')]
 class SectionManager extends Component
 {
     public bool $showForm = false;
@@ -21,6 +23,10 @@ class SectionManager extends Component
 
     public function mount(): void
     {
+        if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
+            abort(403, 'Access denied.');
+        }
+
         $this->gradeLevels = GradeLevel::orderBy('order')->get();
     }
 

@@ -7,9 +7,11 @@ use App\Models\Section;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\TeacherAssignment;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Title('Assignments')]
 class AssignmentManager extends Component
 {
     use WithPagination;
