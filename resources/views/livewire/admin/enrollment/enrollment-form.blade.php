@@ -95,6 +95,12 @@
                                         <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $selectedStudent->guardian_name }} ({{ $selectedStudent->guardian_relationship }})</span>
                                     </div>
                                 @endif
+                                @if ($isGrade12 && $track)
+                                    <div class="col-span-2 pt-2 border-t border-zinc-200/50 dark:border-zinc-700/50">
+                                        <span class="block text-zinc-400 mb-0.5">Selected Track</span>
+                                        <span class="font-bold text-blue-600 dark:text-blue-400 uppercase">{{ strtoupper($track) }}</span>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @else
@@ -372,6 +378,20 @@
                                 </div>
                                 @error('section_id') <p class="text-red-500 text-[11px] mt-1 flex items-center gap-1"><i class="ti ti-alert-circle"></i> {{ $message }}</p> @enderror
                             </div>
+
+                            @if ($isGrade12)
+                                <div>
+                                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">Track / Strand <span class="text-red-500">*</span></label>
+                                    <flux:select wire:model="track" class="w-full bg-zinc-50 dark:bg-zinc-800 focus:bg-white dark:focus:bg-zinc-900">
+                                        <option value="">Select track</option>
+                                        <option value="stem">STEM — Science, Technology, Engineering & Math</option>
+                                        <option value="abm">ABM — Accountancy, Business & Management</option>
+                                        <option value="humss">HUMSS — Humanities & Social Sciences / Arts</option>
+                                        <option value="sports">Sports, Health & Wellness</option>
+                                    </flux:select>
+                                    @error('track') <p class="text-red-500 text-[11px] mt-1 flex items-center gap-1"><i class="ti ti-alert-circle"></i> {{ $message }}</p> @enderror
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

@@ -15,7 +15,27 @@ class Subject extends Model
         'code',
         'type',
         'grade_level_id',
+        'track',
     ];
+
+    public function scopeForGradeLevel($query, GradeLevel $gradeLevel): void
+    {
+        $query->where('type', $gradeLevel->type)
+              ->where(function ($q) use ($gradeLevel) {
+                  $q->whereNull('grade_level_id')
+                    ->orWhere('grade_level_id', $gradeLevel->id);
+              });
+    }
+
+    public function scopeForTrack($query, string $track): void
+    {
+        $query->where('track', $track);
+    }
+
+    public function scopeCoreSubjects($query): void
+    {
+        $query->whereNull('track');
+    }
 
     public function gradeLevel(): BelongsTo
     {

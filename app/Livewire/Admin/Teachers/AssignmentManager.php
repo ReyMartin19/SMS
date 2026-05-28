@@ -106,9 +106,31 @@ class AssignmentManager extends Component
         return view('livewire.admin.teachers.assignment-manager', [
             'assignments' => $assignments,
             'teachers' => Teacher::where('status', 'active')->orderBy('last_name')->get(),
-            'subjects' => Subject::orderBy('name')->get(),
+            'subjects' => Subject::all()->sortBy(function($sub) {
+                $score = 0;
+                if ($sub->type === 'elementary') $score = 1;
+                elseif ($sub->type === 'junior_high') $score = 2;
+                elseif ($sub->type === 'senior_high' && !$sub->track) $score = 3;
+                else $score = 4;
+                return $score . '-' . ($sub->track ?? '') . '-' . $sub->name;
+            })->groupBy(function($subject) {
+                if ($subject->type === 'elementary') {
+                    return 'Elementary';
+                } elseif ($subject->type === 'junior_high') {
+                    return 'Junior High School';
+                } else {
+                    if ($subject->track) {
+                        return 'Senior High - ' . strtoupper($subject->track) . ' Track';
+                    }
+                    return 'Senior High - Core';
+                }
+            }),
             'sections' => Section::with('gradeLevel')->get()->sortBy(function($section) {
                 return $section->gradeLevel->order . '-' . $section->name;
+            })->groupBy(function($section) {
+                return $section->gradeLevel->name;
+            })->sortBy(function($group) {
+                return $group->first()->gradeLevel->order;
             }),
             'schoolYears' => SchoolYear::orderByDesc('start_date')->get(),
         ]);

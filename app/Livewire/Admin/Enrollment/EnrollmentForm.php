@@ -43,6 +43,8 @@ class EnrollmentForm extends Component
     public ?int $grade_level_id = null;
     public ?int $section_id = null;
     public string $enrolled_at = '';
+    public string $track = '';
+    public bool $isGrade12 = false;
 
     // Data
     public $schoolYears = [];
@@ -95,17 +97,27 @@ class EnrollmentForm extends Component
     {
         $this->sections = Section::where('grade_level_id', $this->grade_level_id)->get();
         $this->section_id = null;
+        $this->track = '';
+
+        $level = GradeLevel::find($this->grade_level_id);
+        $this->isGrade12 = $level && $level->order === 12;
     }
 
     public function enroll(): void
     {
-        $this->validate([
+        $validationRules = [
             'selectedStudent' => 'required',
             'school_year_id'  => 'required|exists:school_years,id',
             'grade_level_id'  => 'required|exists:grade_levels,id',
             'section_id'      => 'required|exists:sections,id',
             'enrolled_at'     => 'required|date',
-        ]);
+        ];
+
+        if ($this->isGrade12) {
+            $validationRules['track'] = 'required|in:stem,abm,humss,sports';
+        }
+
+        $this->validate($validationRules);
 
         // Check if already enrolled this school year
         $exists = Enrollment::where('student_id', $this->selectedStudent->id)
@@ -117,18 +129,27 @@ class EnrollmentForm extends Component
             return;
         }
 
-        Enrollment::create([
+        $enrollment = Enrollment::create([
             'student_id'     => $this->selectedStudent->id,
             'school_year_id' => $this->school_year_id,
             'grade_level_id' => $this->grade_level_id,
             'section_id'     => $this->section_id,
             'status'         => 'enrolled',
             'enrolled_at'    => $this->enrolled_at,
+            'track'          => $this->isGrade12 ? $this->track : null,
         ]);
+
+        $service = new \App\Services\SubjectAssignmentService();
+        $gradeLevel = GradeLevel::find($this->grade_level_id);
+        $service->assignSubjects(
+            $this->selectedStudent,
+            $enrollment,
+            $gradeLevel,
+            $this->isGrade12 ? $this->track : null
+        );
 
         $credentials = $this->createStudentAccount($this->selectedStudent);
 
-        $gradeLevel = GradeLevel::find($this->grade_level_id);
         $section    = Section::find($this->section_id);
 
         ActivityLog::log(
@@ -141,6 +162,7 @@ class EnrollmentForm extends Component
                     'school_year_id' => $this->school_year_id,
                     'grade_level_id' => $this->grade_level_id,
                     'section_id'     => $this->section_id,
+                    'track'          => $this->isGrade12 ? $this->track : null,
                 ],
             ]
         );
@@ -153,7 +175,7 @@ class EnrollmentForm extends Component
         }
 
         session()->flash('success', $message);
-        $this->reset(['selectedStudent', 'grade_level_id', 'section_id', 'search']);
+        $this->reset(['selectedStudent', 'grade_level_id', 'section_id', 'search', 'track', 'isGrade12']);
     }
 
     /**

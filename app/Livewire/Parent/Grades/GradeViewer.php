@@ -15,82 +15,92 @@ use Illuminate\Support\Facades\Auth;
 class GradeViewer extends Component
 {
     public ?Student $student = null;
-    public ?SchoolYear $activeSchoolYear = null;
-    public ?Enrollment $enrollment = null;
-    public string $activeTab = 'Q1';
+    public $schoolYears = [];
+    public $selectedSchoolYearId;
+    public $enrollment;
+    public $grades = [];
 
-    public function mount()
+    public function mount(): void
     {
-        $this->activeSchoolYear = SchoolYear::where('is_active', true)->first();
-        $this->student = Student::where('parent_user_id', Auth::id())->first();
-        
-        if ($this->student && $this->activeSchoolYear) {
-            $this->enrollment = Enrollment::with(['section', 'gradeLevel'])
-                ->where('student_id', $this->student->id)
-                ->where('school_year_id', $this->activeSchoolYear->id)
-                ->first();
-        }
+        $student = Student::where('parent_user_id', Auth::id())->first();
+        if (!$student) return;
+
+        $this->student = $student;
+
+        // Get all school years the student was enrolled in ordered latest first
+        $this->schoolYears = SchoolYear::whereHas('enrollments', function ($q) use ($student) {
+            $q->where('student_id', $student->id);
+        })->orderByDesc('start_date')->get();
+
+        // Default to active school year if enrolled, else latest
+        $activeYear = $this->schoolYears->firstWhere('is_active', true);
+        $this->selectedSchoolYearId = $activeYear
+            ? $activeYear->id
+            : $this->schoolYears->first()?->id;
+
+        $this->loadGrades();
     }
 
-    public function setActiveTab(string $tab)
+    public function loadGrades(): void
     {
-        if (in_array($tab, ['Q1', 'Q2', 'Q3', 'Q4', 'Final'])) {
-            $this->activeTab = $tab;
-        }
+        if (!$this->selectedSchoolYearId) return;
+
+        // Get enrollment for selected year
+        $this->enrollment = Enrollment::with(['gradeLevel', 'section', 'schoolYear'])
+            ->where('student_id', $this->student->id)
+            ->where('school_year_id', $this->selectedSchoolYearId)
+            ->first();
+
+        // Get all grades for selected year grouped by subject
+        $rawGrades = StudentGrade::with('subject')
+            ->where('student_id', $this->student->id)
+            ->where('school_year_id', $this->selectedSchoolYearId)
+            ->get();
+
+        // Group by subject_id
+        $grouped = $rawGrades->groupBy('subject_id');
+
+        $this->grades = $grouped->map(function ($quarters) {
+            $subject = $quarters->first()->subject;
+            $q1 = $quarters->firstWhere('quarter', 1)?->quarter_grade;
+            $q2 = $quarters->firstWhere('quarter', 2)?->quarter_grade;
+            $q3 = $quarters->firstWhere('quarter', 3)?->quarter_grade;
+            $q4 = $quarters->firstWhere('quarter', 4)?->quarter_grade;
+
+            // Float casting but keep 0.00 as valid grade
+            $q1 = $q1 !== null ? (float)$q1 : null;
+            $q2 = $q2 !== null ? (float)$q2 : null;
+            $q3 = $q3 !== null ? (float)$q3 : null;
+            $q4 = $q4 !== null ? (float)$q4 : null;
+
+            $available = collect([$q1, $q2, $q3, $q4])->filter(fn($v) => $v !== null)->values();
+            $finalGrade = $available->count() > 0
+                ? round($available->avg(), 2)
+                : null;
+
+            return [
+                'subject_name' => $subject->name,
+                'subject_code' => $subject->code,
+                'q1'           => $q1,
+                'q2'           => $q2,
+                'q3'           => $q3,
+                'q4'           => $q4,
+                'final_grade'  => $finalGrade,
+                'remarks'      => $finalGrade === null
+                    ? 'Incomplete'
+                    : ($finalGrade >= 75 ? 'Passed' : 'Failed'),
+            ];
+        })->values()->toArray();
+    }
+
+    public function selectSchoolYear(int $schoolYearId): void
+    {
+        $this->selectedSchoolYearId = $schoolYearId;
+        $this->loadGrades();
     }
 
     public function render()
     {
-        $subjects = collect();
-        $grades = collect(); 
-        $finalGrades = []; 
-        $overallAverage = null;
-
-        if ($this->student && $this->activeSchoolYear && $this->enrollment) {
-            // Get subjects assigned to student's section
-            $subjects = Subject::whereIn('id', function ($query) {
-                $query->select('subject_id')
-                    ->from('teacher_assignments')
-                    ->where('section_id', $this->enrollment->section_id)
-                    ->where('school_year_id', $this->activeSchoolYear->id);
-            })->get();
-
-            // Load all grade records for this school year
-            $grades = StudentGrade::where('student_id', $this->student->id)
-                ->where('school_year_id', $this->activeSchoolYear->id)
-                ->get()
-                ->groupBy('subject_id'); 
-
-            // Compute final grade per subject and overall average
-            $subjectFinals = [];
-            foreach ($subjects as $subject) {
-                $subjectGrades = $grades->get($subject->id) ?? collect();
-                
-                // Get grades for each quarter
-                $q1 = $subjectGrades->firstWhere('quarter', 1)?->quarter_grade;
-                $q2 = $subjectGrades->firstWhere('quarter', 2)?->quarter_grade;
-                $q3 = $subjectGrades->firstWhere('quarter', 3)?->quarter_grade;
-                $q4 = $subjectGrades->firstWhere('quarter', 4)?->quarter_grade;
-
-                $finalGradeVal = collect([$q1, $q2, $q3, $q4])->filter(fn($v) => !is_null($v));
-                if ($finalGradeVal->isNotEmpty()) {
-                    $finalGrades[$subject->id] = $finalGradeVal->avg();
-                    $subjectFinals[] = $finalGrades[$subject->id];
-                } else {
-                    $finalGrades[$subject->id] = null;
-                }
-            }
-
-            if (count($subjectFinals) > 0) {
-                $overallAverage = collect($subjectFinals)->avg();
-            }
-        }
-
-        return view('livewire.parent.grades.grade-viewer', [
-            'subjects' => $subjects,
-            'grades' => $grades,
-            'finalGrades' => $finalGrades,
-            'overallAverage' => $overallAverage,
-        ]);
+        return view('livewire.parent.grades.grade-viewer');
     }
 }

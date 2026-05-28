@@ -24,10 +24,12 @@ return new class extends Migration
         });
 
         // activity_logs
-        Schema::table('activity_logs', function (Blueprint $table) {
-            $table->index(['user_id', 'module']);
-            $table->index('created_at');
-        });
+        if (Schema::hasTable('activity_logs')) {
+            Schema::table('activity_logs', function (Blueprint $table) {
+                $table->index(['user_id', 'module']);
+                $table->index('created_at');
+            });
+        }
 
         // announcements
         Schema::table('announcements', function (Blueprint $table) {
@@ -55,10 +57,12 @@ return new class extends Migration
             $table->dropIndex(['audience', 'published_at']);
         });
 
-        Schema::table('activity_logs', function (Blueprint $table) {
-            $table->dropIndex(['user_id', 'module']);
-            $table->dropIndex(['created_at']);
-        });
+        if (Schema::hasTable('activity_logs')) {
+            Schema::table('activity_logs', function (Blueprint $table) {
+                $table->dropIndex(['user_id', 'module']);
+                $table->dropIndex(['created_at']);
+            });
+        }
 
         Schema::table('student_grades', function (Blueprint $table) {
             $table->dropIndex(['student_id', 'school_year_id']);

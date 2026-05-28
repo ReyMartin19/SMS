@@ -115,9 +115,14 @@
                 {{-- Grades Table Card --}}
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
                     <div class="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <h2 class="text-sm font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
-                            <i class="ti ti-academic-cap text-blue-500 text-lg"></i> Grades Summary
-                        </h2>
+                        <div class="flex items-center justify-between w-full sm:w-auto gap-4">
+                            <h2 class="text-sm font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                                <i class="ti ti-academic-cap text-blue-500 text-lg"></i> Grades Summary
+                            </h2>
+                            <a href="{{ route('student.grades.index') }}" class="text-xs text-blue-600 hover:underline dark:text-blue-400 font-medium">
+                                View all years
+                            </a>
+                        </div>
                         
                         {{-- Quarter Switcher --}}
                         <div class="flex bg-zinc-100 dark:bg-zinc-850 p-1 rounded-lg border border-zinc-200/50 dark:border-zinc-700/50 shrink-0">

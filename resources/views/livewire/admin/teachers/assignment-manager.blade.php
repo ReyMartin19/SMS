@@ -37,16 +37,28 @@
                 </flux:select>
                 
                 <flux:select wire:model="subject_id" label="Subject">
-                    <option value="">Select Subject</option>
-                    @foreach($subjects as $subject)
-                        <option value="{{ $subject->id }}">{{ $subject->name }} ({{ $subject->code }})</option>
+                    <option value="" class="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">Select Subject</option>
+                    @foreach($subjects as $groupName => $groupSubjects)
+                        <optgroup label="{{ $groupName }}" class="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-semibold">
+                            @foreach($groupSubjects as $subject)
+                                <option value="{{ $subject->id }}" class="bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300">
+                                    {{ $subject->name }} ({{ $subject->code }})
+                                </option>
+                            @endforeach
+                        </optgroup>
                     @endforeach
                 </flux:select>
                 
                 <flux:select wire:model="section_id" label="Section">
-                    <option value="">Select Section</option>
-                    @foreach($sections as $section)
-                        <option value="{{ $section->id }}">{{ $section->gradeLevel->name }} - {{ $section->name }}</option>
+                    <option value="" class="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">Select Section</option>
+                    @foreach($sections as $gradeLevelName => $gradeSections)
+                        <optgroup label="{{ $gradeLevelName }}" class="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-semibold">
+                            @foreach($gradeSections as $section)
+                                <option value="{{ $section->id }}" class="bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300">
+                                    {{ $section->name }}
+                                </option>
+                            @endforeach
+                        </optgroup>
                     @endforeach
                 </flux:select>
                 

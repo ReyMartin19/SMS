@@ -266,6 +266,30 @@
                                 <p class="text-xs text-zinc-400 mt-0.5">
                                     Enrolled: {{ \Carbon\Carbon::parse($enrollment->enrolled_at)->format('M d, Y') }}
                                 </p>
+                                @if($enrollment->gradeLevel->order === 12)
+                                    <div class="mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-700">
+                                        @if($changingTrack)
+                                            <div class="space-y-2">
+                                                <flux:select wire:model="selectedTrack" class="w-full">
+                                                    <option value="">Select Track</option>
+                                                    <option value="stem">STEM</option>
+                                                    <option value="abm">ABM</option>
+                                                    <option value="humss">HUMSS</option>
+                                                    <option value="sports">Sports</option>
+                                                </flux:select>
+                                                <div class="flex gap-1 mt-1">
+                                                    <flux:button wire:click="saveTrack" size="xs" variant="primary" class="w-full">Save Track</flux:button>
+                                                    <flux:button wire:click="cancelChangeTrack" size="xs" class="w-full">Cancel</flux:button>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs text-zinc-500">Track: <span class="font-bold text-blue-600 dark:text-blue-400 uppercase">{{ $enrollment->track ?: 'None' }}</span></span>
+                                                <flux:button wire:click="startChangeTrack" size="xs">Change Track</flux:button>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
                                 @php
                                     $eColors = [
                                         'enrolled'    => 'bg-green-100 text-green-700',
@@ -275,7 +299,7 @@
                                     ];
                                     $eColor = $eColors[$enrollment->status] ?? 'bg-zinc-100 text-zinc-500';
                                 @endphp
-                                <span class="mt-1 inline-block px-2 py-0.5 rounded-full text-xs {{ $eColor }}">
+                                <span class="mt-2 inline-block px-2 py-0.5 rounded-full text-xs {{ $eColor }}">
                                     {{ ucfirst($enrollment->status) }}
                                 </span>
                             </div>

@@ -32,6 +32,10 @@ class StudentProfile extends Component
     public string $lrn = '';
     public string $status = '';
 
+    // Track change
+    public string $selectedTrack = '';
+    public bool $changingTrack = false;
+
     public function mount(Student $student): void
     {
         if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
@@ -45,6 +49,68 @@ class StudentProfile extends Component
             'user',
         ]);
         $this->fillFields();
+
+        // Initialize selected track if enrolled in grade 12
+        $g12Enrollment = $this->student->enrollments->first(fn($e) => $e->gradeLevel->order === 12);
+        if ($g12Enrollment) {
+            $this->selectedTrack = $g12Enrollment->track ?? '';
+        }
+    }
+
+    public function startChangeTrack(): void
+    {
+        $this->changingTrack = true;
+    }
+
+    public function cancelChangeTrack(): void
+    {
+        $this->changingTrack = false;
+        $g12Enrollment = $this->student->enrollments->first(fn($e) => $e->gradeLevel->order === 12);
+        if ($g12Enrollment) {
+            $this->selectedTrack = $g12Enrollment->track ?? '';
+        }
+    }
+
+    public function saveTrack(): void
+    {
+        $this->validate([
+            'selectedTrack' => 'required|in:stem,abm,humss,sports',
+        ]);
+
+        $g12Enrollment = $this->student->enrollments()->whereHas('gradeLevel', fn($q) => $q->where('order', 12))->first();
+
+        if ($g12Enrollment) {
+            // Delete old subject enrollments for this school year
+            \App\Models\StudentSubjectEnrollment::where('student_id', $this->student->id)
+                ->where('school_year_id', $g12Enrollment->school_year_id)
+                ->delete();
+
+            // Update enrollment track
+            $g12Enrollment->update(['track' => $this->selectedTrack]);
+
+            // Assign new subjects
+            $service = new \App\Services\SubjectAssignmentService();
+            $service->assignSubjects($this->student, $g12Enrollment, $g12Enrollment->gradeLevel, $this->selectedTrack);
+
+            ActivityLog::log(
+                'changed_student_track', 'student',
+                "Changed track of {$this->student->first_name} {$this->student->last_name} to " . strtoupper($this->selectedTrack),
+                [
+                    'subject_type' => Student::class,
+                    'subject_id'   => $this->student->id,
+                    'new_values'   => ['track' => $this->selectedTrack],
+                ]
+            );
+
+            session()->flash('success', 'Student track updated and subjects reassigned successfully.');
+        }
+
+        $this->student->load([
+            'enrollments.gradeLevel',
+            'enrollments.section',
+            'enrollments.schoolYear',
+        ]);
+        $this->changingTrack = false;
     }
 
     public function fillFields(): void
